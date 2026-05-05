@@ -67,11 +67,15 @@ const ResultsScreen = ({ quizData, answers, onRestart, onEdit }) => {
     };
 
     try {
-      await fetch(ADMIN_ENDPOINT, {
+      const response = await fetch(ADMIN_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(resultData)
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed to send results: ${response.status}`);
+      }
     } catch (error) {
       console.error("Failed to send results:", error);
     }
