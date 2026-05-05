@@ -4,6 +4,26 @@ import { checkAnswer } from '../utils/scoring';
 
 const ADMIN_ENDPOINT = "https://script.google.com/macros/s/AKfycbzOw-jGRRjhQnO8o9v2fGTUl_JAL5CP8ZTTX9n2LLleeK_vJyADq7SUzGZNQnNO_KZmLw/exec";
 
+const getQuestionText = (q) => {
+  if (q.type === 'MULTIPLE_CHOICE') {
+    return `What is the Hebrew meaning of "${q.word}"?`;
+  }
+
+  if (q.type === 'FILL_IN_BLANK') {
+    return `Fill in the blank: ${q.sentence} (Hebrew meaning: ${q.he})`;
+  }
+
+  if (q.type === 'TRANSLATE') {
+    return `Translate to English: ${q.he}`;
+  }
+
+  if (q.type === 'SENTENCE_RECOGNITION') {
+    return `Choose the missing word: ${q.sentence}`;
+  }
+
+  return q.word || q.he || q.sentence || 'Unknown question';
+};
+
 const ResultsScreen = ({ quizData, answers, onRestart, onEdit }) => {
   const [isSent, setIsSent] = useState(false);
 
@@ -55,6 +75,21 @@ const ResultsScreen = ({ quizData, answers, onRestart, onEdit }) => {
 
     setIsSent(true);
 
+    const questionDetails = results.allQuestions.map(q => ({
+      section: q.sectionTitle,
+      question: getQuestionText(q),
+      userAnswer: q.userAnswer || '(not answered)',
+      correctAnswer: q.correctAnswer,
+      status: q.status
+    }));
+
+    const mistakeDetails = questionDetails.filter(q => q.status === 'WRONG');
+    const mistakes = mistakeDetails
+      .map((item, index) =>
+        `${index + 1}. ${item.section}\nQuestion: ${item.question}\nStudent answered: ${item.userAnswer}\nCorrect answer: ${item.correctAnswer}`
+      )
+      .join('\n\n');
+
     const resultData = {
       name,
       score: results.score,
@@ -63,21 +98,13 @@ const ResultsScreen = ({ quizData, answers, onRestart, onEdit }) => {
       almostCorrect: results.almost,
       wrong: results.wrong,
       words: results.allQuestions.map(q => q.word || q.correctAnswer),
+      questions: questionDetails,
+      mistakes,
       timestamp: new Date().toISOString()
     };
 
-    resultData.wrongAnswers = results.allQuestions
-      .filter(q => q.status === 'WRONG')
-      .map(q => ({
-        section: q.sectionTitle,
-        question: q.type === 'MULTIPLE_CHOICE' || q.type === 'TRANSLATE' ? q.word || q.he : 'השלמת משפט',
-        userAnswer: q.userAnswer || '(לא נענה)',
-        correctAnswer: q.correctAnswer
-      }));
-
-    resultData.wrongAnswersText = resultData.wrongAnswers
-      .map(item => `${item.section}: ${item.question} | answered: ${item.userAnswer} | correct: ${item.correctAnswer}`)
-      .join('\n');
+    resultData.wrongAnswers = mistakeDetails;
+    resultData.wrongAnswersText = mistakes;
 
     try {
       await fetch(ADMIN_ENDPOINT, {
