@@ -63,6 +63,14 @@ const ResultsScreen = ({ quizData, answers, onRestart, onEdit }) => {
       almostCorrect: results.almost,
       wrong: results.wrong,
       words: results.allQuestions.map(q => q.word || q.correctAnswer),
+      wrongAnswers: results.allQuestions
+        .filter(q => q.status === 'WRONG')
+        .map(q => ({
+          section: q.sectionTitle,
+          question: q.type === 'MULTIPLE_CHOICE' || q.type === 'TRANSLATE' ? q.word || q.he : 'השלמת משפט',
+          userAnswer: q.userAnswer || '(לא נענה)',
+          correctAnswer: q.correctAnswer
+        })),
       timestamp: new Date().toISOString()
     };
 
