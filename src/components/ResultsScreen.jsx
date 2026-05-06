@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { RefreshCw, Edit, CheckCircle, XCircle, AlertCircle, Send } from 'lucide-react';
 import { checkAnswer } from '../utils/scoring';
 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import WordInput from './components/WordInput';
 import QuizScreen from './components/QuizScreen';
 import ResultsScreen from './components/ResultsScreen';
+import AdminDashboard from './components/AdminDashboard';
 import { generateQuiz } from './utils/quizGenerator';
 
-function App() {
+function QuizApp() {
   const [screen, setScreen] = useState('INPUT'); // INPUT, QUIZ, RESULTS
   const [quizData, setQuizData] = useState(null);
   const [answers, setAnswers] = useState(null);
@@ -56,6 +57,10 @@ function App() {
       )}
     </div>
   );
+}
+
+function App() {
+  return window.location.pathname === '/admin' ? <AdminDashboard /> : <QuizApp />;
 }
 
 export default App;
